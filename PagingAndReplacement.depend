@@ -1,0 +1,6 @@
+# depslib dependency file v1.0
+1544801285 source:/home/mostafayousry/PagingAndReplacement/main.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+
