@@ -6,6 +6,7 @@ FILE *inputFile;
 int framesCount;
 int *framesArray;
 int *goblinArray;
+int *useArray;
 int pageFaultCount = 0;
 char policyName[5];
 
@@ -60,39 +61,35 @@ void startFIFO()
     }
 }
 
-void updateGoblinArray()
+void updateGoblinArray(int index, int referenceNumber)
 {
-    for(int i = 0; i < framesCount; i++)
-    {
-        if(goblinArray[i] != -1)
-            goblinArray[i]++;
-    }
+    goblinArray[index] = referenceNumber;
 }
 int LRUPageIndex()
 {
-    int max = -1, maxIndex;
+    int min = 10000000, minIndex;
     for(int i = 0; i< framesCount; i++)
     {
-        if(goblinArray[i] > max)
+        if(goblinArray[i] < min)
         {
-            max = goblinArray[i];
-            maxIndex = i;
+            min = goblinArray[i];
+            minIndex = i;
         }
     }
-    return maxIndex;
+    return minIndex;
 }
 void startLRU()
 {
-    int pageNumber, nextAvilableFrameIndex = 0;
+    int pageNumber, nextAvilableFrameIndex = 0, referenceNumber = 0;
     //scanf("%d", &pageNumber);
     fscanf(inputFile,"%d", &pageNumber);
     while(pageNumber != -1)
     {
-        updateGoblinArray();
+
         int isPageAvilable = isFramesArrayContainsPage(pageNumber);
         if(isPageAvilable != -1)
         {
-            goblinArray[isPageAvilable] = 0;
+            updateGoblinArray(isPageAvilable, referenceNumber++);
             printf("%02d     ",pageNumber);
         }
         else
@@ -100,14 +97,14 @@ void startLRU()
             if(nextAvilableFrameIndex < framesCount)
             {
                 framesArray[nextAvilableFrameIndex] = pageNumber;
-                goblinArray[nextAvilableFrameIndex++] = 0;
+                updateGoblinArray(nextAvilableFrameIndex++, referenceNumber++);
                 printf("%02d     ",pageNumber);
             }
             else
             {
                 int index = LRUPageIndex();
                 framesArray[index] = pageNumber;
-                goblinArray[index] = 0;
+                updateGoblinArray(index, referenceNumber++);
                 pageFaultCount++;
                 printf("%02d F   ",pageNumber);
             }
@@ -118,6 +115,40 @@ void startLRU()
         fscanf(inputFile,"%d", &pageNumber);
     }
 }
+
+void startCLOCK(){
+int pageNumber, useArrayIndex = 0;
+    //scanf("%d", &pageNumber);
+    fscanf(inputFile,"%d", &pageNumber);
+    while(pageNumber != -1)
+    {
+        int isPageAvilable = isFramesArrayContainsPage(pageNumber);
+        if(isPageAvilable != -1){
+            useArray[isPageAvilable] = 1;
+
+            printf("%02d     ",pageNumber);
+        }
+        else{
+
+            while(useArray[useArrayIndex % framesCount] != 0){
+                useArray[useArrayIndex % framesCount] = 0;
+                useArrayIndex++;
+            }
+            framesArray[useArrayIndex % framesCount] = pageNumber;
+            useArray[useArrayIndex % framesCount] = 1;
+            useArrayIndex++;
+            if(useArrayIndex > 3){
+                printf("%02d F   ",pageNumber);
+                pageFaultCount++;
+            }
+            else printf("%02d     ",pageNumber);
+
+        }
+        printFramesContent();
+        fscanf(inputFile,"%d", &pageNumber);
+    }
+}
+
 void initializeByNegativeOne()
 {
     for(int i = 0; i < framesCount; i++)
@@ -129,7 +160,7 @@ void initializeByNegativeOne()
 
 void startPolicy()
 {
-    inputFile = fopen("inputLRU.txt","r");
+    inputFile = fopen("inputCLOCK.txt","r");
     //scanf("%d",&framesCount);
     //scanf("%s", policyName);
 
@@ -141,14 +172,15 @@ void startPolicy()
     printf("----   -----------------\n");
     framesArray = (int*) calloc(framesCount,sizeof(int));
     goblinArray = (int*) calloc(framesCount,sizeof(int));
+    useArray = (int*) calloc(framesCount,sizeof(int));
     initializeByNegativeOne();
     if(strcmp(policyName, "FIFO") == 0)
         startFIFO();
 
-    else if (strcmp(policyName, "LRU") == 0) {}
+    else if (strcmp(policyName, "LRU") == 0)
           startLRU();
-//    else
-//        startCLOCK();
+    else
+       startCLOCK();
 
     printf("-------------------------------------\n");
     printf("Number of page faults = %d",pageFaultCount);
