@@ -191,7 +191,7 @@ void startPolicy()
         startCLOCK();
 
     printf("-------------------------------------\n");
-    printf("Number of page faults = %d",pageFaultCount);
+    printf("Number of page faults = %d\n",pageFaultCount);
 
 }
 
