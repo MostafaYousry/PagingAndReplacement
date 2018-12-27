@@ -11,6 +11,16 @@ char policyName[5];
 int *referencedPages;
 int referencedPagesCount = 0;
 
+
+/// set all the element of the array by -1
+void initializeByNegativeOne(int *array)
+{
+    for(int i = 0; i < framesCount; i++)
+    {
+        array[i] = -1;
+    }
+}
+
 /// check if the frames array contain a page and return its index if exists, otherwise return -1
 int isFramesArrayContainsPage(int pageNumber)
 {
@@ -124,6 +134,7 @@ void startLRU()
         }
         printFramesContent();
     }
+    free(goblinArray);
 }
 
 /// CLOCK replacement policy work as follow:
@@ -169,15 +180,7 @@ void startCLOCK()
         }
         printFramesContent();
     }
-}
-
-/// set all the element of the array by -1
-void initializeByNegativeOne(int *array)
-{
-    for(int i = 0; i < framesCount; i++)
-    {
-        array[i] = -1;
-    }
+    free(useArray);
 }
 
 void startPolicy()
@@ -195,10 +198,11 @@ void startPolicy()
     referencedPagesCount++;
     while(referencedPages[referencedPagesCount - 1] != -1)
     {
-        temp = realloc(referencedPages, (referencedPagesCount + 1) *sizeof(int));
+        temp = (int*) realloc(referencedPages, (referencedPagesCount + 1) *sizeof(int));
         referencedPages = temp;
         scanf("%d",&referencedPages[referencedPagesCount]);
         referencedPagesCount++;
+
     }
     referencedPagesCount--;
     /// print policy name & some of the output lines format then start the replacement policy specified by the user
@@ -218,7 +222,9 @@ void startPolicy()
     ///print the number of page faults happened
     printf("-------------------------------------\n");
     printf("Number of page faults = %d\n",pageFaultCount);
-
+    free(framesArray);
+    free(referencedPages);
+    free(temp);
 }
 
 int main()
