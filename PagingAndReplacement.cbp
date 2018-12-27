@@ -31,9 +31,7 @@
 		<Compiler>
 			<Add option="-Wall" />
 		</Compiler>
-		<Unit filename="lab4.c">
-			<Option compilerVar="CC" />
-		</Unit>
+		<Unit filename="lab4.cc" />
 		<Extensions>
 			<code_completion />
 			<envvars />

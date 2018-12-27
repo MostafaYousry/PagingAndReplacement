@@ -134,7 +134,6 @@ void startLRU()
         }
         printFramesContent();
     }
-    free(goblinArray);
 }
 
 /// CLOCK replacement policy work as follow:
@@ -180,7 +179,6 @@ void startCLOCK()
         }
         printFramesContent();
     }
-    free(useArray);
 }
 
 void startPolicy()
@@ -222,9 +220,6 @@ void startPolicy()
     ///print the number of page faults happened
     printf("-------------------------------------\n");
     printf("Number of page faults = %d\n",pageFaultCount);
-    free(framesArray);
-    free(referencedPages);
-    free(temp);
 }
 
 int main()
