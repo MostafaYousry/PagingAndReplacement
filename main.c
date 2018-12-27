@@ -9,6 +9,8 @@ int *goblinArray;
 int *useArray;
 int pageFaultCount = 0;
 char policyName[5];
+int *referencedPages;
+int referencedPagesCount = 0;
 
 int isFramesArrayContainsPage(int pageNumber)
 {
@@ -34,10 +36,9 @@ void startFIFO()
 {
     int index = 0;
     int pageNumber;
-    //scanf("%d", &pageNumber);
-    fscanf(inputFile,"%d", &pageNumber);
-    while(pageNumber != -1)
+    for(int i = 0; i < referencedPagesCount; i++)
     {
+        pageNumber = referencedPages[i];
         int isPageAvilable = isFramesArrayContainsPage(pageNumber);
         if(isPageAvilable != -1)
         {
@@ -56,8 +57,7 @@ void startFIFO()
             framesArray[index++ % framesCount] = pageNumber;
         }
         printFramesContent();
-        //scanf("%d", &pageNumber);
-        fscanf(inputFile,"%d", &pageNumber);
+
     }
 }
 
@@ -81,11 +81,9 @@ int LRUPageIndex()
 void startLRU()
 {
     int pageNumber, nextAvilableFrameIndex = 0, referenceNumber = 0;
-    //scanf("%d", &pageNumber);
-    fscanf(inputFile,"%d", &pageNumber);
-    while(pageNumber != -1)
+    for(int i = 0; i < referencedPagesCount; i++)
     {
-
+        pageNumber = referencedPages[i];
         int isPageAvilable = isFramesArrayContainsPage(pageNumber);
         if(isPageAvilable != -1)
         {
@@ -111,33 +109,35 @@ void startLRU()
 
         }
         printFramesContent();
-        //scanf("%d", &pageNumber);
-        fscanf(inputFile,"%d", &pageNumber);
     }
 }
 
-void startCLOCK(){
-int pageNumber, useArrayIndex = 0;
-    //scanf("%d", &pageNumber);
-    fscanf(inputFile,"%d", &pageNumber);
-    while(pageNumber != -1)
+void startCLOCK()
+{
+    int pageNumber, useArrayIndex = 0;
+    for(int i = 0; i < referencedPagesCount; i++)
     {
+        pageNumber = referencedPages[i];
         int isPageAvilable = isFramesArrayContainsPage(pageNumber);
-        if(isPageAvilable != -1){
+        if(isPageAvilable != -1)
+        {
             useArray[isPageAvilable] = 1;
 
             printf("%02d     ",pageNumber);
         }
-        else{
+        else
+        {
 
-            while(useArray[useArrayIndex % framesCount] != 0){
+            while(useArray[useArrayIndex % framesCount] != 0)
+            {
                 useArray[useArrayIndex % framesCount] = 0;
                 useArrayIndex++;
             }
             framesArray[useArrayIndex % framesCount] = pageNumber;
             useArray[useArrayIndex % framesCount] = 1;
             useArrayIndex++;
-            if(useArrayIndex > 3){
+            if(useArrayIndex > framesCount)
+            {
                 printf("%02d F   ",pageNumber);
                 pageFaultCount++;
             }
@@ -145,7 +145,6 @@ int pageNumber, useArrayIndex = 0;
 
         }
         printFramesContent();
-        fscanf(inputFile,"%d", &pageNumber);
     }
 }
 
@@ -160,32 +159,40 @@ void initializeByNegativeOne()
 
 void startPolicy()
 {
-    inputFile = fopen("inputCLOCK.txt","r");
-    //scanf("%d",&framesCount);
-    //scanf("%s", policyName);
 
-    fscanf(inputFile,"%d", &framesCount);
-    fscanf(inputFile, "%s", policyName);
-    printf("Replacement Policy = %s\n",policyName);
-    printf("-------------------------------------\n");
-    printf("Page   Content of Frames\n");
-    printf("----   -----------------\n");
+    scanf("%d",&framesCount);
+    scanf("%s", policyName);
     framesArray = (int*) calloc(framesCount,sizeof(int));
     goblinArray = (int*) calloc(framesCount,sizeof(int));
     useArray = (int*) calloc(framesCount,sizeof(int));
     initializeByNegativeOne();
+    referencedPages = (int*) calloc(1,sizeof(int));
+    int *temp;
+    scanf("%d",&referencedPages[referencedPagesCount]);
+    referencedPagesCount++;
+    while(referencedPages[referencedPagesCount - 1] != -1)
+    {
+        temp = realloc(referencedPages, (referencedPagesCount + 1) *sizeof(int));
+        referencedPages = temp;
+        scanf("%d",&referencedPages[referencedPagesCount]);
+        referencedPagesCount++;
+    }
+    referencedPagesCount--;
+    printf("Replacement Policy = %s\n",policyName);
+    printf("-------------------------------------\n");
+    printf("Page   Content of Frames\n");
+    printf("----   -----------------\n");
     if(strcmp(policyName, "FIFO") == 0)
         startFIFO();
 
     else if (strcmp(policyName, "LRU") == 0)
-          startLRU();
+        startLRU();
     else
-       startCLOCK();
+        startCLOCK();
 
     printf("-------------------------------------\n");
     printf("Number of page faults = %d",pageFaultCount);
 
-    fclose(inputFile);
 }
 
 int main()
